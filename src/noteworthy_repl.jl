@@ -20,6 +20,11 @@ end
 
 function notes_on_done(query, increment_id)
     tags = split(query)
+
+    if isempty(tags)
+        tags = [""]
+    end
+
     is_new = tags[1] == "new" || startswith(query, new_note_header)
     if is_new && length(tags) > 1
         body = strip(query)

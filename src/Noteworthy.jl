@@ -4,7 +4,7 @@ include("replmod.jl")
 include("noteworthy.jl")
 include("noteworthy_repl.jl")
 
-NOTES_FNAME = "notes.json"
+NOTES_FNAME = joinpath(Pkg.dir("Noteworthy"), "notes.json")
 NOTES_PROMPT = "notes> "
 NEW_NOTES_PROMPT = "new note> "
 NOTES_KEY = '/'
@@ -22,18 +22,34 @@ add_note(note::Note) = add_note(note, NOTES_DICT, TAGS_DICT, writeback=true, fna
 get_notes(tags) = get_notes(tags, TAGS_DICT, NOTES_DICT)
 
 ###### Set up REPL mode ######
-repl = Base.active_repl
-main_mode = repl.interface.modes[1]
+function init_repl_mode(repl)
+    global main_mode = repl.interface.modes[1]
 
-NOTES_MODE = create_mode(
-    NOTES_PROMPT,
-    :notes,
-    prefix_color=PROMPT_COLOR,
-    suffix_color=TEXT_COLOR,
-    on_done = create_on_done_fn(increment_id),
-    on_enter = create_on_complete_fn(NEW_NOTES_PROMPT, NOTES_PROMPT)
-    )
+    global NOTES_MODE = create_mode(
+        NOTES_PROMPT,
+        :notes,
+        prefix_color=PROMPT_COLOR,
+        suffix_color=TEXT_COLOR,
+        on_done = create_on_done_fn(increment_id),
+        on_enter = create_on_complete_fn(NEW_NOTES_PROMPT, NOTES_PROMPT)
+        )
 
-add_mode_to_repl(NOTES_KEY, NOTES_MODE)
+    add_mode_to_repl(NOTES_KEY, NOTES_MODE)
+end
+
+
+
+if isdefined(Base, :active_repl)
+    repl = Base.active_repl
+    init_repl_mode(repl)
+else
+    atreplinit() do repl
+        repl.interface = Base.REPL.setup_interface(repl)
+        init_repl_mode(repl)
+    end
+end
+
+
+
 
 end # module

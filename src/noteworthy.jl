@@ -141,7 +141,7 @@ function get_notes(tag::AbstractString, tag_dict, notes_dict)
 end
 
 function verify_notes_file(fname)
-    if !(fname in readdir())
+    if !(basename(fname) in readdir(dirname(fname)))
         write_dict(Dict(0=>Note(0, [], "dummy")), fname)
     end
 end
